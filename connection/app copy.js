@@ -8,31 +8,14 @@ const app_connection = require('./app_connection.js')
 const app_exec = require('./app_exec.js')
 const type = require('./@type.js')
 
-/**
- * @typedef {type.connection_option} type_connection_option
- */
-/**
- * @typedef {type.server_info} type_server_info
- */
-/**
- * @typedef {type.exec_option} type_exec_option
- */
-/**
- * @typedef {type.exec_result} type_exec_result
- */
-/**
- * @typedef {type.exec_result_end} type_exec_result_end
- */
-
-/** Examples - see _demo.js */
 class App {
     /**
-     * @param {type_connection_option} options
+     * @param {type.connection_option} options
      */
     constructor(options) {
-        /** @type {type_server_info} */
-        this.info = undefined
-        /** @private @type {type_connection_option} */
+        /** @private @type {type.connection_server_info} */
+        this._info = undefined
+        /** @private @type {type.connection_option} */
         this._connection_option = undefined
         /** @private @type {tds.ConnectionConfig} */
         this._connection_option_tds = undefined
@@ -61,14 +44,16 @@ class App {
     /**
      * @callback callback_ping
      * @param {Error} error
-     *//**
+     */
+    /**
+     * check connect to MS SQL, load MS SQL server info
      * @param {callback_ping} [callback]
      */
     ping(callback) {
         this.exec(["PRINT 'timeout'", shared.depot_server_info()], undefined, (callback_exec => {
             if (callback_exec.type === "end") {
                 if (vvs.isEmpty(callback_exec.end.error)) {
-                    this.info = {
+                    this._info = {
                         version: vvs.findPropertyValueInObject(callback_exec.end.table_list[0].row_list[0], 'version', ''),
                         timezone: vvs.findPropertyValueInObject(callback_exec.end.table_list[0].row_list[0], 'timezone', 0),
                         ping_duration_msec: callback_exec.end.query_list[0].duration
@@ -86,12 +71,20 @@ class App {
     }
 
     /**
+     * return MS SQL info (non empty after exec ping())
+     */
+    server_info() {
+        return this._info
+    }
+
+    /**
      * @callback callback_exec
-     * @param {type_exec_result} callback
+     * @param {type.exec_result} callback
      */
     /**
+     * exec one query or many queries in one batch
      * @param {string|string[]} query
-     * @param {type_exec_option} options
+     * @param {type.exec_option} options
      * @param {callback_exec} [callback]
      */
     exec(query, options, callback) {
@@ -99,7 +92,7 @@ class App {
 
         let callback_end_sended = false
 
-        /** @type {type_exec_result_end} */
+        /** @type {type.exec_result_end} */
         let result_funded = {
             error: undefined,
             error_type: undefined,
@@ -205,7 +198,8 @@ class App {
      * @callback callback_newid
      * @param {Error} error
      * @param {string[]} guid_list
-     *//**
+     */
+    /**
      * get ms sql generated guid's
      * @param {number} count count guid
      * @param {callback_newid} callback

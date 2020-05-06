@@ -5,28 +5,6 @@ function stub () {}
 exports.stub = stub
 
 /**
- * @typedef server_info
- * @property {string} version
- * @property {number} timezone
- * @property {number} ping_duration_msec
- */
-
-//#region connection
-
-/**
- * @typedef connection
- * @property {lib_tds.Connection} tds_connection
- * @property {connection_current_state} current_state
- */
-
-/**
- * @typedef connection_current_state
- * @property {boolean} allow_message
- * @property {number} table_index
- * @property {number} query_index
- */
-
-/**
  * @typedef connection_option
  * @property {string} instance ms sql instance, examples - 'localhost', 'myserver/myinstance'
  * @property {string} [login] login for ms sql authentication, if need domain authentication, set undefined
@@ -37,13 +15,35 @@ exports.stub = stub
 /**
  * @typedef connection_option_additional
  * @property {string} [database] name database for connect, default - 'tempdb'
- * @property {string} [app_name] app name, which will be visible in profiler, default - 'vmst-driver'
+ * @property {string} [app_name] app name, which will be visible in MS SQL profiler, default - 'vv-mssql'
  * @property {boolean} [use_utc] default - true
  * @property {number} [connection_timeout] connection timeout in milliseconds, default - 15000
  * @property {number} [execution_timeout] execution timeout in milliseconds, default - 0 (infinity)
  * @property {boolean} [encrypt_connection] encrypt connection, default - false
  */
 
+/**
+ * @typedef connection_server_info
+ * @property {string} version MS SQL Server version
+ * @property {number} timezone OS timezone (in minutes), where MS SQL running, examples:  +180 = Saint-Petersburg, +120 = Paris, 0 = London, -300 = New York
+ * @property {number} ping_duration_msec time (in millisecond) for sucess connect to MS SQL and exec small simpe query
+ */
+
+//#region connection
+/**
+ * @private
+ * @typedef connection
+ * @property {lib_tds.Connection} tds_connection
+ * @property {connection_current_state} current_state
+ */
+
+/**
+ * @private
+ * @typedef connection_current_state
+ * @property {boolean} allow_message
+ * @property {number} table_index
+ * @property {number} query_index
+ */
 //#endregion
 
 //#region go exec
@@ -51,10 +51,10 @@ exports.stub = stub
 /**
  * @typedef exec_option
  * @property {string} [database] use this database before start query
- * @property {boolean} [get_spid] spid, for (example) kill process, default - false
+ * @property {boolean} [get_spid] get spid, for (example) kill process, default - false
  * @property {exec_chunk} [chunk] chunked return result, default - undefined (off)
  * @property {exec_lock} [lock] protect competitive exec query, based on sp_getapplock, default - undefined (off)
- * @property {boolean} [stop_on_error] if in step error exists, next steps not run, default - true
+ * @property {boolean} [stop_on_error] for exec many queries in one batch - if in step error exists, next steps not run, default - true
  */
 
 /**

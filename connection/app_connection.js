@@ -34,7 +34,7 @@ function options_beautify(option) {
 
     connection_option.additional = {
         database: vvs.toString(additional.database, 'tempdb'),
-        app_name: vvs.toString(additional.app_name, 'vmst-driver'),
+        app_name: vvs.toString(additional.app_name, 'vv-mssql'),
         use_utc: vvs.toBool(additional.use_utc, true),
         encrypt_connection: vvs.toBool(additional.encrypt_connection, false),
         execution_timeout: vvs.toInt(additional.execution_timeout, 0),
