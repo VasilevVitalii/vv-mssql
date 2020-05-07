@@ -3,28 +3,44 @@
 const os = require('os')
 const vvs = require('vv-shared')
 const shared = require('vv-mssql-shared')
+const type = require('./@type.js')
+const connection = require('./../connection/app.js')
+const connection_type = require('./../connection/@type.js')
 
 exports.query_create_tables = query_create_tables
 exports.query_get_stat = query_get_stat
 exports.query_load = query_load
 
 /**
- * ms sql script for create tables for storage actions in ms sql
- * @param {string} [name_schema] ms sql schema name, default = 'dbo'
- * @param {string} [name_prefix_table] ms sql prefix for tables, default = 'action'
- * @return {string}
+ * @callback callback_query_create_tables
+ * @param {connection_type.exec_result_end} callback_exec
  */
-function query_create_tables(name_schema, name_prefix_table) {
-    let schema = name_schema_bautify(name_schema)
-    let prefix_table = name_prefix_table_bautify(name_prefix_table)
+/**
+ * create tables for storage actions in ms sql
+ * @param {connection} connection
+ * @param {string} schema
+ * @param {string} table
+ * @param {callback_query_create_tables} [callback]
+ */
+function query_create_tables(connection, schema, table, callback) {
+    if (vvs.isEmpty(connection)) {
+        if (vvs.isFunction(callback)) {
+            callback(undefined)
+        }
+        return
+    }
 
-    return [
+    schema = vvs.border_del(schema, '[', ']')
+    table = vvs.border_del(table, '[', ']')
+
+    let query = [
         shared.depot_sch_schema(schema),
-        shared.depot_sch_table(schema, prefix_table, 'action storage', [
+        shared.depot_sch_table(schema, table, 'action storage', [
             {name: 'rid', type: 'varchar', nullable: false, len_chars: 100, pk_position: 1, description: 'primary key'},
             {name: 'fdm', type: 'datetime', nullable: false, description: 'date/time create'},
             {name: 'ldm', type: 'datetime', nullable: false, description: 'date/time last modify'},
             {name: 'lat', type: 'timestamp', nullable: false},
+            {name: 'apps', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'app list, format - {app1}{app2}'},
             {name: 'tags', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'tag list, format - {tag1}{tag2}'},
             {name: 'title', type: 'nvarchar', nullable: true, len_chars: 200},
             {name: 'note', type: 'nvarchar', nullable: true, len_chars: 'max'},
@@ -34,20 +50,27 @@ function query_create_tables(name_schema, name_prefix_table) {
             {name: 'sql_lock', type: 'varchar', nullable: true, len_chars: 100},
             {name: 'sql_lock_wait', type: 'int', nullable: true},
             {name: 'sql_lock_message', type: 'nvarchar', nullable: true, len_chars: 'max'},
-            {name: 'result_table', type: 'nvarchar', nullable: true, len_chars: 'max'},
-            {name: 'result_postprocessor', type: 'nvarchar', nullable: true, len_chars: 'max'},
+            {name: 'preprocessor', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'js function for request data before use it as query params'},
+            {name: 'postprocessor', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'js function for query result before reply'},
         ], 'error'),
-        shared.depot_sch_table(schema, vvs.format("{0}_eav", prefix_table), 'additional info for action storage', [
+        shared.depot_sch_table(schema, vvs.format("{0}_eav", table), 'additional info for action storage', [
             {name: 'parent_rid', type: 'varchar', nullable: false, len_chars: 100, pk_position: 1, description: 'link to action'},
             {name: 'rid', type: 'varchar', nullable: false, len_chars: 100, pk_position: 2, description: 'key'},
             {name: 'data', type: 'nvarchar', nullable: false, len_chars: 'max', description: 'info'}
         ], 'error'),
         shared.depot_sch_foreign(
-            schema, vvs.format("{0}_eav", prefix_table),
-            schema, prefix_table,
+            schema, vvs.format("{0}_eav", table),
+            schema, table,
             [{parent_column: 'rid', child_column: 'parent_rid'}],"cascade", "cascade"
         )
     ].join(os.EOL)
+
+    connection.exec(query, undefined, callback_exec => {
+        if (callback_exec.type !== 'end') return
+        if (vvs.isFunction(callback)) {
+            callback(callback_exec.end)
+        }
+    })
 }
 
 /**

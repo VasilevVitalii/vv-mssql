@@ -5,7 +5,7 @@ function stub () {}
 exports.stub = stub
 
 /**
- * @typedef connection_option
+ * @typedef constructor_options
  * @property {string} instance ms sql instance, examples - 'localhost', 'myserver/myinstance'
  * @property {string} [login] login for ms sql authentication, if need domain authentication, set undefined
  * @property {string} [password] password for ms sql authentication, if need domain authentication, set undefined

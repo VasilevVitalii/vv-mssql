@@ -10,11 +10,11 @@ exports.open = open
 exports.close = close
 
 /**
- * @param {type.connection_option} option
- * @return {type.connection_option}
+ * @param {type.constructor_options} option
+ * @return {type.constructor_options}
  */
 function options_beautify(option) {
-    /** @type {type.connection_option} */
+    /** @type {type.constructor_options} */
     let connection_option = (!vvs.isEmpty(option)
         ?
         {
@@ -47,7 +47,7 @@ function options_beautify(option) {
 }
 
 /**
- * @param {type.connection_option} option
+ * @param {type.constructor_options} option
  * @return {tds.ConnectionConfig}
  */
 function options_to_tds(option) {

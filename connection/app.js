@@ -10,12 +10,12 @@ const type = require('./@type.js')
 
 class App {
     /**
-     * @param {type.connection_option} options
+     * @param {type.constructor_options} options
      */
     constructor(options) {
         /** @private @type {type.connection_server_info} */
         this._info = undefined
-        /** @private @type {type.connection_option} */
+        /** @private @type {type.constructor_options} */
         this._connection_option = undefined
         /** @private @type {tds.ConnectionConfig} */
         this._connection_option_tds = undefined

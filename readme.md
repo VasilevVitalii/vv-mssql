@@ -117,7 +117,7 @@ get ms sql generated guid&#x27;s
 ## Typedefs
 
 <dl>
-<dt><a href="#connection_option">connection_option</a></dt>
+<dt><a href="#constructor_options">constructor_options</a></dt>
 <dd></dd>
 <dt><a href="#connection_option_additional">connection_option_additional</a></dt>
 <dd></dd>
@@ -145,9 +145,9 @@ get ms sql generated guid&#x27;s
 <dd></dd>
 </dl>
 
-<a name="connection_option"></a>
+<a name="constructor_options"></a>
 
-## connection\_option
+## constructor\_options
 **Kind**: global typedef  
 **Properties**
 
