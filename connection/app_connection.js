@@ -43,6 +43,17 @@ function options_beautify(option) {
     if (connection_option.additional.execution_timeout < 0) connection_option.additional.execution_timeout = 0
     if (connection_option.additional.connection_timeout < 0) connection_option.additional.connection_timeout = 15000
 
+    if (!vvs.isEmptyString(connection_option.instance)) {
+        if (connection_option.instance === '.') {
+            connection_option.instance = 'localhost'
+        }
+        if (connection_option.instance.length > 2 && connection_option.instance.substring(0, 2) === '.\\') {
+            connection_option.instance = connection_option.instance = 'localhost\\'.concat(connection_option.instance.substring(2, connection_option.instance.length))
+        }
+        if (connection_option.instance.length > 2 && connection_option.instance.substring(0, 2) === './') {
+            connection_option.instance = connection_option.instance = 'localhost/'.concat(connection_option.instance.substring(2, connection_option.instance.length))
+        }
+    }
     return connection_option
 }
 
