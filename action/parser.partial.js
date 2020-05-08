@@ -1,7 +1,7 @@
 //@ts-check
 
 const vvs = require('vv-shared')
-const vvms = require('vv-mssql-shared')
+//const vvms = require('vv-mssql-shared')
 const action = require('vv-mssql-action')
 const os = require('os')
 const REGEX_LIMITS = [new RegExp('\'','g'), new RegExp('"', 'g')]
@@ -153,10 +153,53 @@ function text_to_lexems(text) {
 
 /**
  * @param {string[]} lexems
- * @returns {vvms.type_column}
+ * @returns {action.type_sql_param}
+ */
+function lexems_to_type(lexems) {
+    /** @type {action.type_sql_param} */
+    let result = {
+        type: undefined,
+        scalar: undefined,
+        table: undefined
+    }
+
+    let idx_name = lexems.findIndex(f => !vvs.isEmptyString(f) && !['"', '\'', "("].includes(f.substring(0, 1)))
+    if (idx_name < 0) {
+        throw new Error (vvs.format('can\'t find name for param'))
+    }
+    let name = lexems.splice(idx_name, 1)[0]
+
+    let description = ''
+    let idx_description = lexems.findIndex(f => !vvs.isEmptyString(f) && ['"', '\''].includes(f.substring(0, 1)))
+    if (idx_description >= 0) {
+        description = lexems.splice(idx_description, 1)[0]
+        description = description.substring(1, description.length - 1)
+    }
+
+    let idx_type = lexems.findIndex(f => !vvs.isEmptyString(f) && !['"', '\'', "("].includes(f.substring(0, 1)))
+    if (idx_type < 0) {
+        throw new Error (vvs.format('can\'t find type for param with name "{0}"', name))
+    }
+    let type = lexems.splice(idx_type, 1)[0]
+
+    if (type === 'table') {
+        result.type = 'table'
+        result.table = {
+            name: name,
+            column_list: []
+        }
+    }
+
+    return result
+}
+
+/**
+ * @param {string[]} lexems
+ * @returns {action.type_sql_param_scalar}
  */
 function lexems_to_type_column(lexems) {
-    /** @type {vvms.type_column} */
+
+    /** @type {action.type_sql_param_scalar} */
     let result = {
         name: undefined,
         type: undefined,
@@ -168,6 +211,19 @@ function lexems_to_type_column(lexems) {
         pk_position: undefined,
         description: undefined,
     }
+
+
+
+
+
+
+    if (vvs.equal(type, 'guid'))
+
+    if (vvs.equal(type, 'guid')) type = 'uniqueidentifier'
+    let sql_type = vvms.helper_get_types_sql().find(f => vvs.equal(type, f.type))
+
+    //TODO this
+
 
 
     return result
