@@ -11,6 +11,8 @@ class App {
      */
     constructor(options) {
         partial.set_constructor_options(options)
+        queries.internal_action.replacement_add('${schema}', vvs.border_del(partial.env.constructor_options.store.schema, '[', ']'))
+        queries.internal_action.replacement_add('${table}', vvs.border_del(partial.env.constructor_options.store.table, '[', ']'))
     }
 
     /**
@@ -24,14 +26,18 @@ class App {
             }
             return
         }
-        queries.query_create_tables(
+        queries.exec_create_tables(
             partial.env.constructor_options.store.connection,
-            partial.env.constructor_options.store.schema,
-            partial.env.constructor_options.store.table,
             callback_exec => {
-                if (vvs.isFunction(callback)) {
-                    callback(callback_exec.error)
+                if (!vvs.isEmpty(callback_exec.error)) {
+                    if (vvs.isFunction(callback)) {
+                        callback(callback_exec.error)
+                    }
+                    return
                 }
+                queries.exec_load(partial.env.constructor_options.store.connection, true, undefined, undefined, undefined, (error) => {
+                    let a = 5
+                })
             }
         )
     }

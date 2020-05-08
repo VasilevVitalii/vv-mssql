@@ -4,6 +4,7 @@ function stub () {}
 
 const connection = require('./../connection/app.js')
 const connection_type = require('./../connection/@type.js')
+const action_type = require('vv-mssql-action')
 
 exports.stub = stub
 
@@ -40,6 +41,35 @@ exports.stub = stub
 /**
  * @callback env_callback_on_error
  * @param {connection_type.exec_result_end} error
+ */
+
+/**
+ * @typedef action_storage
+ * @property {Date} fdm,
+ * @property {Date} ldm,
+ * @property {string[]} app_list,
+ * @property {string[]} tag_list,
+ * @property {string} sql_param,
+ * @property {string} sql_param_note,
+ * @property {string} sql_lock,
+ * @property {string} preprocessor,
+ * @property {string} postprocessor
+ * @property {action_eav[]} eav[]
+ */
+
+/**
+ * @typedef action_eav
+ * @property {string} rid,
+ * @property {string} data
+ */
+
+/**
+ * @typedef {action_type.type_action & action_extension} action
+ */
+
+/**
+ * @typedef action_extension
+ * @property {action_storage} [storage]
  */
 
 /**
