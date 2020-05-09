@@ -1,13 +1,15 @@
 //@ts-check
 
 const vvs = require('vv-shared')
-//const vvms = require('vv-mssql-shared')
+const vvms = require('vv-mssql-shared')
 const action = require('vv-mssql-action')
 const os = require('os')
 const REGEX_LIMITS = [new RegExp('\'','g'), new RegExp('"', 'g')]
 const ESCAPED_SYMB = ['(', ')', '\'', '"', ',', ';']
 
 exports.text_to_lexems = text_to_lexems
+exports.lexems_to_type_scalar = lexems_to_type_scalar
+exports.helper_split_array = helper_split_array
 
 /**
  * @param {string} text
@@ -153,55 +155,14 @@ function text_to_lexems(text) {
 
 /**
  * @param {string[]} lexems
- * @returns {action.type_sql_param}
- */
-function lexems_to_type(lexems) {
-    /** @type {action.type_sql_param} */
-    let result = {
-        type: undefined,
-        scalar: undefined,
-        table: undefined
-    }
-
-    let idx_name = lexems.findIndex(f => !vvs.isEmptyString(f) && !['"', '\'', "("].includes(f.substring(0, 1)))
-    if (idx_name < 0) {
-        throw new Error (vvs.format('can\'t find name for param'))
-    }
-    let name = lexems.splice(idx_name, 1)[0]
-
-    let description = ''
-    let idx_description = lexems.findIndex(f => !vvs.isEmptyString(f) && ['"', '\''].includes(f.substring(0, 1)))
-    if (idx_description >= 0) {
-        description = lexems.splice(idx_description, 1)[0]
-        description = description.substring(1, description.length - 1)
-    }
-
-    let idx_type = lexems.findIndex(f => !vvs.isEmptyString(f) && !['"', '\'', "("].includes(f.substring(0, 1)))
-    if (idx_type < 0) {
-        throw new Error (vvs.format('can\'t find type for param with name "{0}"', name))
-    }
-    let type = lexems.splice(idx_type, 1)[0]
-
-    if (type === 'table') {
-        result.type = 'table'
-        result.table = {
-            name: name,
-            column_list: []
-        }
-    }
-
-    return result
-}
-
-/**
- * @param {string[]} lexems
+ * @param {string} [name]
+ * @param {string} [type]
  * @returns {action.type_sql_param_scalar}
  */
-function lexems_to_type_column(lexems) {
-
+function lexems_to_type_scalar(lexems, name, type) {
     /** @type {action.type_sql_param_scalar} */
     let result = {
-        name: undefined,
+        name: name,
         type: undefined,
         len_chars: undefined,
         precision: undefined,
@@ -209,22 +170,138 @@ function lexems_to_type_column(lexems) {
         nullable: undefined,
         identity: undefined,
         pk_position: undefined,
-        description: undefined,
+        description: undefined
     }
 
+    if (vvs.isEmptyString(result.name)) {
+        let idx_name = lexems.findIndex(f => !vvs.isEmptyString(f) && !['"', '\'', "("].includes(f.substring(0, 1)))
+        if (idx_name < 0) {
+            throw new Error (vvs.format('can\'t find name for param'))
+        }
+        result.name = lexems.splice(idx_name, 1)[0]
+    }
 
+    let idx_description = lexems.findIndex(f => !vvs.isEmptyString(f) && ['"', '\''].includes(f.substring(0, 1)))
+    if (idx_description >= 0) {
+        result.description = lexems.splice(idx_description, 1)[0]
+        result.description = result.description.substring(1, result.description.length - 1)
+    }
 
+    if (!vvs.equal(result.name.substring(0, 1), '*')) {
+        if (vvs.isEmptyString(type)) {
+            let idx_type = lexems.findIndex(f => !vvs.isEmptyString(f) && !['"', '\'', "("].includes(f.substring(0, 1)))
+            if (idx_type < 0) {
+                throw new Error (vvs.format('can\'t find type for param with name "{0}"', name))
+            }
+            type = lexems.splice(idx_type, 1)[0]
+        }
 
+        if (vvs.equal(type, 'guid')) type = 'uniqueidentifier'
+        let sql_type = vvms.helper_get_types_sql().find(f => vvs.equal(type, f.type))
+        if (vvs.isEmpty(sql_type)) {
+            throw new Error (vvs.format('unknown type "{0}" in param with name "{1}"', [type, result.name]))
+        }
+        result.type = sql_type.type
 
+        let idx_len = lexems.findIndex(f => !vvs.isEmptyString(f) && ['('].includes(f.substring(0, 1)))
+        if (idx_len === 0 || (idx_len > 0 && !vvs.equal(lexems[idx_len - 1], 'identity')) ) {
+            let lexem_len = text_to_lexems(vvs.border_del(lexems.splice(idx_len, 1)[0], '(', ')'))
+            if (lexem_len.length === 2) {
+                result.len_chars = vvs.equal(lexem_len[0], 'max') ? 'max' : vvs.toInt(lexem_len[0])
+            } else if (lexem_len.length === 4) {
+                result.precision = vvs.toInt(lexem_len[0])
+                result.scale = vvs.toInt(lexem_len[2])
+            }
+        }
 
-    if (vvs.equal(type, 'guid'))
+        let idx_null = lexems.findIndex(f => !vvs.isEmptyString(f) && vvs.equal(f, 'null'))
+        if (idx_null >= 0) {
+            let exists_notnull = (idx_null <= 0 ? false : vvs.equal(lexems[idx_null - 1], 'not'))
+            if (exists_notnull === true) {
+                result.nullable = false
+                lexems.splice(idx_null - 1, 2)
+            } else {
+                result.nullable = true
+                lexems.splice(idx_null, 1)
+            }
+        }
 
-    if (vvs.equal(type, 'guid')) type = 'uniqueidentifier'
-    let sql_type = vvms.helper_get_types_sql().find(f => vvs.equal(type, f.type))
+        let idx_identity = lexems.findIndex(f => !vvs.isEmptyString(f) && vvs.equal(f, 'identity'))
+        if (idx_identity >= 0) {
+            let identity_step_string = (idx_identity + 1 >= lexems.length ? '' : lexems[idx_identity + 1])
+            if (!vvs.isEmptyString(identity_step_string)) {
+                if (!vvs.equal( vvs.replaceAll(identity_step_string,' ','',true), '(1,1)')) {
+                    throw new Error (vvs.format('unsupported identity specification "{0}" in param with name "{1}", supported only "(1,1)"', [identity_step_string, result.name]))
+                }
+                lexems.splice(idx_identity, 2)
+            } else {
+                lexems.splice(idx_identity, 1)
+            }
+            result.identity = true
+        }
+    }
 
-    //TODO this
-
-
+    if (lexems.length > 0) {
+        throw new Error (vvs.format('after parse param with name "{1}" found unsupported substring "{2}"', [result.name, lexems.join(' ')]))
+    }
 
     return result
 }
+
+/**
+ * @param {Object[]} arr
+ * @param {string[]} splitters
+ * @returns {Object[][]}
+ */
+function helper_split_array(arr, splitters) {
+    let res = []
+    let buf = []
+    arr.forEach(item => {
+        if (splitters.includes(item)) {
+            res.push(buf)
+            buf = []
+            return
+        }
+        buf.push(item)
+    })
+    if (buf.length > 0) {
+        res.push(buf)
+    }
+    return res
+}
+
+// /**
+//  * @param {string[]} lexems
+//  * @returns {action.type_sql_param_scalar}
+//  */
+// function lexems_to_type_column(lexems) {
+
+//     /** @type {action.type_sql_param_scalar} */
+//     let result = {
+//         name: undefined,
+//         type: undefined,
+//         len_chars: undefined,
+//         precision: undefined,
+//         scale: undefined,
+//         nullable: undefined,
+//         identity: undefined,
+//         pk_position: undefined,
+//         description: undefined,
+//     }
+
+
+
+
+
+
+//     if (vvs.equal(type, 'guid'))
+
+//     if (vvs.equal(type, 'guid')) type = 'uniqueidentifier'
+//     let sql_type = vvms.helper_get_types_sql().find(f => vvs.equal(type, f.type))
+
+
+
+
+
+//     return result
+// }

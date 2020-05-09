@@ -9,33 +9,41 @@ const connection = require('./../connection/app.js')
 const connection_type = require('./../connection/@type.js')
 
 let internal_action = new lib_action()
+
 internal_action.add([
     {
         key: 'create_tables',
         sql_script: [
             shared.depot_sch_schema('${schema}'),
             shared.depot_sch_table('${schema}', '${table}', 'action storage', [
+                // {name: 'rid', type: 'varchar', nullable: false, len_chars: 100, pk_position: 1, description: 'primary key'},
+                // {name: 'fdm', type: 'datetime', nullable: false, description: 'date/time create'},
+                // {name: 'ldm', type: 'datetime', nullable: false, description: 'date/time last modify'},
+                // {name: 'lat', type: 'timestamp', nullable: false},
+                // {name: 'apps', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'app list, format - {app1}{app2}'},
+                // {name: 'tags', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'tag list, format - {tag1}{tag2}'},
+                // {name: 'title', type: 'nvarchar', nullable: true, len_chars: 200},
+                // {name: 'note', type: 'nvarchar', nullable: true, len_chars: 'max'},
+                // {name: 'sql_script', type: 'nvarchar', nullable: true, len_chars: 'max'},
+                // {name: 'sql_param', type: 'nvarchar', nullable: true, len_chars: 'max'},
+                // {name: 'sql_param_note', type: 'nvarchar', nullable: true, len_chars: 'max'},
+                // {name: 'sql_lock', type: 'varchar', nullable: true, len_chars: 100},
+                // {name: 'sql_lock_wait', type: 'int', nullable: true},
+                // {name: 'sql_lock_message', type: 'nvarchar', nullable: true, len_chars: 'max'},
+                // {name: 'preprocessor', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'js function for request data before use it as query params'},
+                // {name: 'postprocessor', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'js function for query result before reply'},
+
                 {name: 'rid', type: 'varchar', nullable: false, len_chars: 100, pk_position: 1, description: 'primary key'},
                 {name: 'fdm', type: 'datetime', nullable: false, description: 'date/time create'},
                 {name: 'ldm', type: 'datetime', nullable: false, description: 'date/time last modify'},
                 {name: 'lat', type: 'timestamp', nullable: false},
-                {name: 'apps', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'app list, format - {app1}{app2}'},
-                {name: 'tags', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'tag list, format - {tag1}{tag2}'},
-                {name: 'title', type: 'nvarchar', nullable: true, len_chars: 200},
-                {name: 'note', type: 'nvarchar', nullable: true, len_chars: 'max'},
-                {name: 'sql_script', type: 'nvarchar', nullable: true, len_chars: 'max'},
-                {name: 'sql_param', type: 'nvarchar', nullable: true, len_chars: 'max'},
-                {name: 'sql_param_note', type: 'nvarchar', nullable: true, len_chars: 'max'},
-                {name: 'sql_lock', type: 'varchar', nullable: true, len_chars: 100},
-                {name: 'sql_lock_wait', type: 'int', nullable: true},
-                {name: 'sql_lock_message', type: 'nvarchar', nullable: true, len_chars: 'max'},
-                {name: 'preprocessor', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'js function for request data before use it as query params'},
-                {name: 'postprocessor', type: 'nvarchar', nullable: true, len_chars: 'max', description: 'js function for query result before reply'},
+                {name: 'query', type: 'nvarchar', nullable: true, len_chars: 'max'},
             ], 'error'),
             shared.depot_sch_table('${schema}', vvs.format("{0}_eav", '${table}'), 'additional info for action storage', [
                 {name: 'parent_rid', type: 'varchar', nullable: false, len_chars: 100, pk_position: 1, description: 'link to action'},
                 {name: 'rid', type: 'varchar', nullable: false, len_chars: 100, pk_position: 2, description: 'key'},
-                {name: 'data', type: 'nvarchar', nullable: false, len_chars: 'max', description: 'info'}
+                {name: 'data', type: 'nvarchar', nullable: false, len_chars: 'max', description: 'info'},
+                {name: 'description', type: 'nvarchar', nullable: false, len_chars: 'max', description: 'info'},
             ], 'error'),
             shared.depot_sch_foreign(
                 '${schema}', vvs.format("{0}_eav", '${table}'),
@@ -68,11 +76,9 @@ internal_action.add([
     {
         key: 'load_all',
         sql_script: [
-            "SELECT [rid],[fdm],[ldm],[lat],[apps],[tags],[title],[note],[sql_script],[sql_param],[sql_param_note],[sql_lock],[sql_lock_wait],[sql_lock_message],[preprocessor],[postprocessor]",
+            "SELECT [rid],[fdm],[ldm],[lat],[query]",
             "FROM [${schema}].[${table}] WITH (NOLOCK) ORDER BY [rid]",
-            "IF @load_eav = 1 BEGIN",
-            "   SELECT [parent_rid], [rid], [data] FROM [${schema}].[${table}_eav] ORDER BY [parent_rid], [rid]",
-            "END"
+            "SELECT [parent_rid],[rid],[data],[description] FROM [${schema}].[${table}_eav] ORDER BY [parent_rid], [rid]",
         ].join(os.EOL),
         sql_param_list: [
             {type: 'scalar', scalar: {name: 'load_eav', type: 'bit', nullable: false}}
