@@ -10,9 +10,15 @@ class App {
      * @param {type.constructor_options} options
      */
     constructor(options) {
-        partial.set_constructor_options(options)
-        queries.internal_action.replacement_add('${schema}', vvs.border_del(partial.env.constructor_options.store.schema, '[', ']'))
-        queries.internal_action.replacement_add('${table}', vvs.border_del(partial.env.constructor_options.store.table, '[', ']'))
+        /** @type {type.env} */
+        this._env = {
+            constructor_options: partial.constructor_options_beautify(options),
+            callback: {
+                on_error: undefined
+            }
+        }
+        queries.internal_action.replacement_add('${schema}', vvs.border_del(this._env.constructor_options.store.schema, '[', ']'))
+        queries.internal_action.replacement_add('${table}', vvs.border_del(this._env.constructor_options.store.table, '[', ']'))
     }
 
     /**

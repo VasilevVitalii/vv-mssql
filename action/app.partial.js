@@ -3,24 +3,15 @@
 const vvs = require('vv-shared')
 const type = require('./@type.js')
 
-/** @type {type.env} */
-let env = {
-    constructor_options: undefined,
-    callback: {
-        on_error: undefined
-    }
-}
-
-exports.env = env
-exports.set_constructor_options = set_constructor_options
+exports.constructor_options_beautify = constructor_options_beautify
 
 /**
  * @param {type.constructor_options} options
+ * @returns {type.constructor_options}
  */
-function set_constructor_options(options) {
-
+function constructor_options_beautify(options) {
     /** @type {type.constructor_options} */
-    env.constructor_options = {
+    let options_beauty = {
         target: {
             connection: vvs.findPropertyValueInObject(options, ['target', 'connection'])
         },
@@ -32,7 +23,9 @@ function set_constructor_options(options) {
         }
     }
 
-    if (env.constructor_options.store.time_reload_store_sec <= 0) {
-        env.constructor_options.store.time_reload_store_sec = undefined
+    if (options_beauty.store.time_reload_store_sec <= 0) {
+        options_beauty.store.time_reload_store_sec = undefined
     }
+
+    return options_beauty
 }
