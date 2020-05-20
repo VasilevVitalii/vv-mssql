@@ -3,9 +3,8 @@
 npm i vv-mssql
 ```
 ```js
-const vvmssql = require('vv-mssql')
-
-let connection = new vvmssql({
+//@ts-check
+let connection = require('vv-mssql').create({
     instance: 'myserver\\myinstance',
     login: 'sa',
     password: 'my very protected password',
