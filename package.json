@@ -1,13 +1,13 @@
 {
   "name": "vv-mssql",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "JavaScript (NodeJs): exec query on Microsoft SQL Server. Based on http://tediousjs.github.io/tedious/",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "doc_old": "type .readme.md > readme.md && jsdoc2md index.js >> readme.md",
+    "doc": "type .readme.md > readme.md && jsdoc2md app.js >> readme.md",
     "updatever": "npm version patch --no-git-tag-version",
     "gitadd": "git add ./readme.md ./package.json ./package-lock.json",
-    "doc": "node ./_readme/build.js"
+    "doc_": "node ./_readme/build.js"
   },
   "pre-commit": "doc, updatever, gitadd",
   "repository": {
