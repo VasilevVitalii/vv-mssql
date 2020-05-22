@@ -5,7 +5,11 @@ const type = require('./@type.js')
 exports.create = create
 
 /**
- * @param {type.constructor_options} [options]
+ * @typedef {type.constructor_options} mssql_constructor_options
+ */
+
+/**
+ * @param {mssql_constructor_options} [options]
  */
 function create(options) {
     return new app(options)
