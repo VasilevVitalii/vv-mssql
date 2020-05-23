@@ -13,7 +13,7 @@ class App {
      * @param {type.constructor_options} options
      */
     constructor(options) {
-        /** @private @type {type.connection_server_info} */
+        /** @private @type {type.ping_server_info} */
         this._info = undefined
         /** @private @type {type.constructor_options} */
         this._connection_option = undefined
@@ -72,9 +72,13 @@ class App {
 
     /**
      * return MS SQL info (non empty after exec ping())
+     * @returns {type.connection_server_info}
      */
     server_info() {
-        return this._info
+        return {
+            ping: this._info,
+            connection: this._connection_option
+        }
     }
 
     /**

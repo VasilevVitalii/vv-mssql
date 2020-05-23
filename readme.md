@@ -108,7 +108,7 @@ connection.ping(error => {
 * [App](#App)
     * [new App(options)](#new_App_new)
     * [.ping([callback])](#App+ping)
-    * [.server_info()](#App+server_info)
+    * [.server_info()](#App+server_info) ⇒ <code>type.connection\_server\_info</code>
     * [.exec(query, options, [callback])](#App+exec)
     * [.newid(count, callback)](#App+newid)
 
@@ -133,7 +133,7 @@ check connect to MS SQL, load MS SQL server info
 
 <a name="App+server_info"></a>
 
-### app.server\_info()
+### app.server\_info() ⇒ <code>type.connection\_server\_info</code>
 return MS SQL info (non empty after exec ping())
 
 **Kind**: instance method of [<code>App</code>](#App)  
