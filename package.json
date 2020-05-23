@@ -1,6 +1,6 @@
 {
   "name": "vv-mssql",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "JavaScript (NodeJs): exec query on Microsoft SQL Server. Based on http://tediousjs.github.io/tedious/",
   "main": "index.js",
   "scripts": {

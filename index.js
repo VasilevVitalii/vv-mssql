@@ -8,11 +8,11 @@ exports.create = create
  * @typedef {lib_app} app
  */
 /**
- * @typedef {type.constructor_options} mssql_constructor_options
+ * @typedef {type.constructor_options} options
  */
 
 /**
- * @param {mssql_constructor_options} [options]
+ * @param {options} [options]
  */
 function create(options) {
     return new lib_app(options)
