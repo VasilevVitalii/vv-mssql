@@ -11,6 +11,9 @@ exports.create = create
  * @typedef {type.constructor_options} options
  */
 /**
+ * @typedef {type.exec_result} exec_result
+ */
+/**
  * @typedef {type.exec_result_end} exec_result_end
  */
 /**
