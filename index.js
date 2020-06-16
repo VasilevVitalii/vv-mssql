@@ -19,6 +19,9 @@ exports.create = create
 /**
  * @typedef {type.exec_result_table} exec_result_table
  */
+/**
+ * @typedef {type.exec_lock} exec_lock
+ */
 
 /**
  * @param {options} [options]

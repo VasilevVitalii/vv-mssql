@@ -28,7 +28,7 @@ exports.stub = stub
  * @property {number} timezone OS timezone (in minutes), where MS SQL running, examples:  +180 = Saint-Petersburg, +120 = Paris, 0 = London, -300 = New York
  * @property {number} ping_duration_msec time (in millisecond) for sucess connect to MS SQL and exec small simpe query
  */
- /**
+/**s
  * @typedef connection_server_info
  * @property {ping_server_info} ping
  * @property {constructor_options} connection
