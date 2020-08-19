@@ -68,4 +68,5 @@ function options_beautify(raw, example) {
     options.additional.execution_timeout = vvs.findPropertyValueInObject(object_raw, ['additional', 'execution_timeout'], options.additional.execution_timeout)
     options.additional.encrypt_connection = vvs.findPropertyValueInObject(object_raw, ['additional', 'encrypt_connection'], options.additional.encrypt_connection)
     options.additional.use_utc = vvs.findPropertyValueInObject(object_raw, ['additional', 'use_utc'], options.additional.use_utc)
+    return options
 }
