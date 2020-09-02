@@ -32,9 +32,12 @@ function options_beautify(option) {
 
     let additional = (vvs.isEmpty(option) || vvs.isEmpty(option.additional) ? {} : option.additional)
 
+    let row_name_beauty = vvs.toString(additional.row_name_beauty, 'original')
+
     connection_option.additional = {
         database: vvs.toString(additional.database, 'tempdb'),
         app_name: vvs.toString(additional.app_name, 'vv-mssql'),
+        row_name_beauty: row_name_beauty === 'original' || row_name_beauty === 'first_letter_to_lower' ? row_name_beauty : 'original',
         use_utc: vvs.toBool(additional.use_utc, true),
         encrypt_connection: vvs.toBool(additional.encrypt_connection, false),
         execution_timeout: vvs.toInt(additional.execution_timeout, 0),
@@ -87,7 +90,10 @@ function options_to_tds(option) {
             instanceName: (server.length > 1 ? server.splice(1, server.length).join("/") : undefined),
             useColumnNames: false,
             useUTC: option.additional.use_utc,
-            trustServerCertificate: false
+            camelCaseColumns: option.additional.row_name_beauty === 'first_letter_to_lower' ? true : false,
+            trustServerCertificate: false,
+            // @ts-ignore
+            validateBulkLoadParameters: false
         }
     }
 }

@@ -13,10 +13,15 @@ exports.stub = stub
  */
 
 /**
+ * @typedef {'original'|'first_letter_to_lower'} type_row_name_beauty
+ */
+
+/**
  * @typedef connection_option_additional
  * @property {string} [database] name database for connect, default - 'tempdb'
  * @property {string} [app_name] app name, which will be visible in MS SQL profiler, default - 'vv-mssql'
  * @property {boolean} [use_utc] default - true
+ * @property {type_row_name_beauty} [row_name_beauty] default - 'original'
  * @property {number} [connection_timeout] connection timeout in milliseconds, default - 15000
  * @property {number} [execution_timeout] execution timeout in milliseconds, default - 0 (infinity)
  * @property {boolean} [encrypt_connection] encrypt connection, default - false

@@ -24,6 +24,9 @@ exports.options_beautify = options_beautify
 /**
  * @typedef {type.exec_lock} exec_lock
  */
+/**
+ * @typedef {type.type_row_name_beauty} row_name_beauty
+ */
 
 /**
  * @param {options} [options]
@@ -53,6 +56,7 @@ function options_beautify(raw, example) {
             execution_timeout: example ? 0 : null,
             encrypt_connection: example ? false : null,
             use_utc: example ? true : null,
+            row_name_beauty: example ? 'original' : null
         }
     }
     if (vvs.isEmpty(raw)) return options
@@ -63,6 +67,7 @@ function options_beautify(raw, example) {
     options.password = vvs.findPropertyValueInObject(object_raw, 'password', options.password)
     options.instance = vvs.findPropertyValueInObject(object_raw, 'instance', options.instance)
     options.additional.app_name = vvs.findPropertyValueInObject(object_raw, ['additional', 'app_name'], options.additional.app_name)
+    options.additional.row_name_beauty = vvs.findPropertyValueInObject(object_raw, ['additional', 'row_name_beauty'], options.additional.row_name_beauty)
     options.additional.database = vvs.findPropertyValueInObject(object_raw, ['additional', 'database'], options.additional.database)
     options.additional.connection_timeout = vvs.findPropertyValueInObject(object_raw, ['additional', 'connection_timeout'], options.additional.connection_timeout)
     options.additional.execution_timeout = vvs.findPropertyValueInObject(object_raw, ['additional', 'execution_timeout'], options.additional.execution_timeout)
