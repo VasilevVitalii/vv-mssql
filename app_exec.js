@@ -402,11 +402,9 @@ function add_function_get_beauty_query(exec_result_end, options) {
             query.push('')
         }
 
-        // print durations
         if (actual_estimate_execution === 'actual') {
             let total_duration = 0
-            query.push('/*')
-            query.push('    durations (msec)')
+            let step_duration = []
             this.query_list.filter(f => !vvs.isEmpty(f.query_index)).forEach(q => {
                 let step = vvs.toInt(q.query_index, 0)
                 let duration = vvs.toFloat(q.duration, 0)
@@ -422,24 +420,31 @@ function add_function_get_beauty_query(exec_result_end, options) {
                     } else {
                         duration = Math.round(duration)
                     }
+                    total_duration = total_duration + duration
                 }
-                total_duration = total_duration + duration
+                step_duration.push({step: step, duration: duration})
+            })
 
-                let duration_s = duration.toString()
+            if (step_duration.length === 1) {
+                query.push('--durations (msec) '.concat(step_duration[0].duration))
+            } else if (step_duration.length > 1) {
+                query.push('/*')
+                query.push('    durations (msec)')
+                step_duration.forEach(item => {
+                    let duration_s = item.duration.toString()
+                    let duration_p_i = duration_s.indexOf('.')
+                    let duration_len = (duration_p_i < 0 ? duration_s.length : duration_s.substring(0, duration_p_i).length)
+                    let step_s = '    step #'.concat(item.step.toString(), ': ')
+                    let info = (step_s.length > 20 || duration_len > 10 ? step_s.concat(duration_s) : step_s.concat(' '.repeat( (20 - step_s.length) + (10 - duration_len)), duration_s))
+                    query.push(info)
+                })
+                let duration_s = total_duration.toString()
                 let duration_p_i = duration_s.indexOf('.')
                 let duration_len = (duration_p_i < 0 ? duration_s.length : duration_s.substring(0, duration_p_i).length)
-
-                let step_s = '    step #'.concat(step.toString(), ': ')
-                let info = (step_s.length > 20 || duration_len > 10 ? step_s.concat(duration_s) : step_s.concat(' '.repeat( (20 - step_s.length) + (10 - duration_len)), duration_s))
-
+                let info = (duration_len > 10 ? '    total: '.concat(duration_s) : '    total: '.concat(' '.repeat(19 - duration_len), duration_s))
                 query.push(info)
-            })
-            let duration_s = total_duration.toString()
-            let duration_p_i = duration_s.indexOf('.')
-            let duration_len = (duration_p_i < 0 ? duration_s.length : duration_s.substring(0, duration_p_i).length)
-            let info = (duration_len > 10 ? '    total: '.concat(duration_s) : '    total: '.concat(' '.repeat(19 - duration_len), duration_s))
-            query.push(info)
-            query.push('*/')
+                query.push('*/')
+            }
         }
 
         //if no database override in the scripts
@@ -451,12 +456,18 @@ function add_function_get_beauty_query(exec_result_end, options) {
 
         if (actual_estimate_execution === 'actual') {
             // print queries
-            this.query_list.filter(f => !vvs.isEmpty(f.query_index)).forEach(q => {
+            let query_list = this.query_list.filter(f => !vvs.isEmpty(f.query_index))
+            let need_print_step = query_list.length > 1
+            query_list.forEach(q => {
                 query.push('')
                 let step = vvs.toInt(q.query_index, 0)
-                query.push('--#region step #'.concat(step.toString()))
+                if (need_print_step === true) {
+                    query.push('--#region step #'.concat(step.toString()))
+                }
                 query.push(q.query)
-                query.push('--#endregion step #'.concat(step.toString()))
+                if (need_print_step === true) {
+                    query.push('--#endregion step #'.concat(step.toString()))
+                }
                 query.push('GO')
             })
 
@@ -469,11 +480,16 @@ function add_function_get_beauty_query(exec_result_end, options) {
             }
         } else {
             // print queries
+            let need_print_step = this.query_list.length > 1
             this.query_list.forEach((q, step) => {
                 query.push('')
-                query.push('--#region step #'.concat(step.toString()))
+                if (need_print_step === true) {
+                    query.push('--#region step #'.concat(step.toString()))
+                }
                 query.push(q.query)
-                query.push('--#endregion step #'.concat(step.toString()))
+                if (need_print_step === true) {
+                    query.push('--#endregion step #'.concat(step.toString()))
+                }
                 query.push('GO')
             })
         }
