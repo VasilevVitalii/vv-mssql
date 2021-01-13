@@ -70,6 +70,13 @@ function options_to_tds(option) {
     let sql_authentication = (!vvs.isEmptyString(option.login) && !vvs.isEmptyString(option.password))
     let server = option.instance.split("\\").join("/").split("/")
 
+    let port = undefined
+    let find_port = server[server.length - 1].split(',')
+    if (find_port.length === 2) {
+        server[server.length - 1] = find_port[0].trim()
+        port = vvs.toInt(find_port[1].trim())
+    }
+
     /** @type {lib_tds.ConnectionConfig} */
     return {
         server: server[0],
@@ -93,7 +100,8 @@ function options_to_tds(option) {
             camelCaseColumns: option.additional.row_name_beauty === 'first_letter_to_lower' ? true : false,
             trustServerCertificate: false,
             // @ts-ignore
-            validateBulkLoadParameters: false
+            validateBulkLoadParameters: false,
+            port: port
         }
     }
 }

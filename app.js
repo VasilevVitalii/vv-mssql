@@ -22,23 +22,19 @@ class App {
         /** @private @type {string[]} */
         this._newid_list = []
 
-        try {
-            if (vvs.isEmpty(options)) {
-                throw Error('connection options to MS SQL Server can not be empty');
-            }
-            let options_beauty = app_connection.options_beautify(options)
-            if (vvs.isEmptyString(options_beauty.instance)) {
-                throw Error('instance can not be empty')
-            }
-            if (vvs.isEmptyString(options_beauty.login) !== vvs.isEmptyString(options_beauty.password)) {
-                throw Error(vvs.format('login "{0}" and password "{1}" must be both empty or both not empty', [options_beauty.login, options_beauty.password]))
-            }
-
-            this._connection_option = options_beauty
-            this._connection_option_tds = app_connection.options_to_tds(options_beauty)
-        } catch (error) {
-            throw error
+        if (vvs.isEmpty(options)) {
+            throw Error('connection options to MS SQL Server can not be empty');
         }
+        let options_beauty = app_connection.options_beautify(options)
+        if (vvs.isEmptyString(options_beauty.instance)) {
+            throw Error('instance can not be empty')
+        }
+        if (vvs.isEmptyString(options_beauty.login) !== vvs.isEmptyString(options_beauty.password)) {
+            throw Error(vvs.format('login "{0}" and password "{1}" must be both empty or both not empty', [options_beauty.login, options_beauty.password]))
+        }
+
+        this._connection_option = options_beauty
+        this._connection_option_tds = app_connection.options_to_tds(options_beauty)
     }
 
     /**
