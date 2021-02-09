@@ -25,25 +25,39 @@ connection.ping(error => {
     console.log('Server info', connection.server_info())
 
     //example 1 - simple 1 query
-    connection.exec("select * from sys.objects", undefined, callback_exec => {
-        if (callback_exec.type === 'end') {
-            // see callback_exec.end for more info
-            if (callback_exec.end.error) {
-                console.error(callback_exec.end.error_type, callback_exec.end.error)
-            }
-            console.log(callback_exec.end.get_beauty_query('actual'))
+    connection.exec("select top 10 * from sys.objects", undefined, callback_exec => {
+        if (callback_exec.type !== 'end') return
+
+        console.log('script', callback_exec.end.get_beauty_query('actual'))
+
+        if (callback_exec.end.error) {
+            console.error(callback_exec.end.error_type, callback_exec.end.error)
+            return
         }
+        console.log('result', callback_exec.end.table_list)
     })
 
     //example 2 - 2 queries in one connect
-    connection.exec(["select * from sys.objects", "SELECT * FROM sys.[columns]"], undefined, callback_exec => {
-        if (callback_exec.type === 'end') {
-            // see callback_exec.end for more info
-            if (callback_exec.end.error) {
-                console.error(callback_exec.end.error_type, callback_exec.end.error)
-            }
-            console.log(callback_exec.end.get_beauty_query('actual'))
+    connection.exec(["select top 5 * from sys.objects", "select top 5 * from sys.columns"], undefined, callback_exec => {
+        if (callback_exec.type !== 'end') return
+
+        console.log('script', callback_exec.end.get_beauty_query('actual'))
+
+        if (callback_exec.end.error) {
+            console.error(callback_exec.end.error_type, callback_exec.end.error)
+            return
         }
+
+        console.log('total duration (script time + all handlers time)', callback_exec.end.duration)
+        console.log('current database at the time the script was running (if use in script instrunction "use database")', callback_exec.end.database)
+        callback_exec.end.table_list.forEach(table => {
+            console.log('==============TABLE #'.concat(table.table_index.toString(), ', QUERY #', table.query_index.toString()))
+            console.log('SCHEMA:')
+            table.column_list.forEach(column => {
+                console.log('    '.concat(column.name, ' ', column.declararion))
+            })
+            console.log('rows', table.row_list)
+        })
     })
 
     //example 3 - a) get spid, b) exec script in other database
