@@ -1,9 +1,12 @@
-## Install & Use
+## for Node: exec query on Microsoft SQL Server; based on http://tediousjs.github.io/tedious/
+
+## Install
 ```cmd
 npm i vv-mssql
 ```
+
+## Use
 ```js
-//@ts-check
 let connection = require('vv-mssql').create({
     instance: 'myserver\\myinstance',
     login: 'sa',
