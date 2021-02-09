@@ -1,6 +1,6 @@
 {
   "name": "vv-mssql",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "JavaScript (NodeJs): exec query on Microsoft SQL Server. Based on http://tediousjs.github.io/tedious/",
   "main": "index.js",
   "scripts": {
@@ -25,8 +25,8 @@
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
-    "tedious": "^9.2.1",
-    "vv-mssql-shared": "0.0.16",
-    "vv-shared": "^3.0.7"
+    "tedious": "^11.0.3",
+    "vv-mssql-shared": "0.1.12",
+    "vv-shared": "^3.0.25"
   }
 }
