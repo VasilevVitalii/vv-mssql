@@ -103,6 +103,12 @@ exports.stub = stub
  */
 
 /**
+ * @callback function_get_beauty_query
+ * @param {'actual'|'estimate'} kind
+ * @returns {string}
+ */
+
+/**
  * @typedef exec_result_end
  * @property {Error} error
  * @property {'connect'|'exec'|'lock'} error_type
@@ -111,7 +117,7 @@ exports.stub = stub
  * @property {exec_result_table[]} table_list
  * @property {exec_result_message[]} message_list
  * @property {exec_query[]} query_list
- * @property {function('actual'|'estimate')} get_beauty_query
+ * @property {function_get_beauty_query} get_beauty_query
  */
 
 /**
