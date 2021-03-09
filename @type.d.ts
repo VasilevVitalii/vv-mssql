@@ -13,7 +13,7 @@ export type constructor_options = {
     password?: string;
     additional?: connection_option_additional;
 };
-export type type_row_name_beauty = "original" | "first_letter_to_lower";
+export type type_row_name_beauty = 'original' | 'first_letter_to_lower';
 export type connection_option_additional = {
     /**
      * name database for connect, default - 'tempdb'
@@ -95,6 +95,10 @@ export type exec_option = {
      * for exec many queries in one batch - if in step error exists, next steps not run, default - true
      */
     stop_on_error?: boolean;
+    /**
+     * convert null in cell to undefined, default - false
+     */
+    null_to_undefined?: boolean;
 };
 export type exec_query = {
     type: 'query' | 'get_spid' | 'database' | 'lock';

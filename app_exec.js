@@ -39,7 +39,8 @@ function exec(connection, result_funded, exec_option, last_table_chunk_index, ca
     let perf_on_row_event_durations = []
 
     let row_beautify_function = function(row){}
-    /** @type {tds.ColumnValue[]} */ let row_raw = undefined
+    // @type {tds.ColumnValue[]}
+    let row_raw = undefined
 
     let current_query = result_funded.query_list[connection.current_state.query_index]
     current_query.query_index = connection.current_state.query_index
@@ -166,7 +167,7 @@ function exec(connection, result_funded, exec_option, last_table_chunk_index, ca
 
             connection.current_state.table_index++
 
-            let column_list_beauty = column_list_beautify(columns)
+            let column_list_beauty = column_list_beautify(columns, exec_option.null_to_undefined)
 
             // @ts-ignore
             row_beautify_function = column_list_beauty.row_beautify_function
@@ -264,7 +265,8 @@ function exec_option_beautify(exec_option) {
                 type: undefined
             },
             lock: undefined,
-            stop_on_error: true
+            stop_on_error: true,
+            null_to_undefined: false
         }
     }
 
@@ -300,7 +302,8 @@ function exec_option_beautify(exec_option) {
         get_spid: vvs.toBool(exec_option.get_spid, false),
         chunk: chunk,
         lock: lock,
-        stop_on_error: vvs.toBool(exec_option.stop_on_error, true)
+        stop_on_error: vvs.toBool(exec_option.stop_on_error, true),
+        null_to_undefined: vvs.toBool(exec_option.null_to_undefined, true),
     }
 }
 
@@ -310,11 +313,13 @@ function exec_option_beautify(exec_option) {
  * @property {function} row_beautify_function
  */
 
+//@param {tds.ColumnMetaData[]} columns
 /**
- * @param {tds.ColumnMetaData[]} columns
+ * @param {Object[]} columns
+ * @param {boolean} null_to_undefined
  * @return {type_column_list_beautify}
  */
-function column_list_beautify(columns) {
+function column_list_beautify(columns, null_to_undefined) {
     /** @type {type.exec_result_column[]} */ let column_list = columns.map(m => { return {
         name: vvs.toString(m.colName,''),
         name_original: vvs.toString(m.colName,''),
@@ -378,7 +383,9 @@ function column_list_beautify(columns) {
     }
 
     //generate function for beautify rows
-    let row_beautify_text = column_list.map((m, index) => { return m.name.concat(":row[",index.toString(),"].value")}).join(",")
+    let row_beautify_text = null_to_undefined === true
+        ? column_list.map((m, index) => { return m.name.concat(":row[",index.toString(),"].value === null ? undefined : row[",index.toString(),"].value")}).join(",")
+        : column_list.map((m, index) => { return m.name.concat(":row[",index.toString(),"].value")}).join(",")
     row_beautify_text = "return {".concat(row_beautify_text, "}")
     let row_beautify_function = new Function('row', row_beautify_text)
 

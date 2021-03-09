@@ -20,7 +20,7 @@ declare class App {
      * check connect to MS SQL, load MS SQL server info
      * @param {callback_ping} [callback]
      */
-    ping(callback?: (error: Error) => any): void;
+    ping(callback?: callback_ping): void;
     /**
      * return MS SQL info (non empty after exec ping())
      * @returns {type.connection_server_info}
@@ -36,7 +36,7 @@ declare class App {
      * @param {type.exec_option} options
      * @param {callback_exec} [callback]
      */
-    exec(query: string | string[], options: type.exec_option, callback?: (callback: type.exec_result) => any): void;
+    exec(query: string | string[], options: type.exec_option, callback?: callback_exec): void;
     /**
      * @callback callback_newid
      * @param {Error} error
@@ -47,6 +47,12 @@ declare class App {
      * @param {number} count count guid
      * @param {callback_newid} callback
      */
-    newid(count: number, callback: (error: Error, guid_list: string[]) => any): void;
+    newid(count: number, callback: callback_newid): void;
 }
+declare namespace App {
+    export { callback_ping, callback_exec, callback_newid };
+}
+type callback_ping = (error: Error) => any;
 import type = require("./@type.js");
+type callback_exec = (callback: type.exec_result) => any;
+type callback_newid = (error: Error, guid_list: string[]) => any;
