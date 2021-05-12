@@ -20,13 +20,14 @@ function options_beautify(option) {
         {
             instance: vvs.toString(option.instance, ''),
             login: vvs.toString(option.login, ''),
-            password: vvs.toString(option.password, '')
+            password: vvs.toString(option.password, ''),
+            beautify_instance: vvs.toString(option.beautify_instance, 'no'),
         }
         :
         {
             instance: '',
             login: '',
-            password: ''
+            password: '',
         }
     )
 

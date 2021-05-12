@@ -10,6 +10,7 @@ exports.stub = stub
  * @property {string} [login] login for ms sql authentication, if need domain authentication, set undefined
  * @property {string} [password] password for ms sql authentication, if need domain authentication, set undefined
  * @property {connection_option_additional} [additional]
+ * @property {'no' | 'check' | 'change'} [beautify_instance] work in ping function if ping fail and server name in instance like comp name, find ip for this comp name and change instance. default = 'no'
  */
 
 /**
@@ -32,6 +33,7 @@ exports.stub = stub
  * @property {string} version MS SQL Server version
  * @property {number} timezone OS timezone (in minutes), where MS SQL running, examples:  +180 = Saint-Petersburg, +120 = Paris, 0 = London, -300 = New York
  * @property {number} ping_duration_msec time (in millisecond) for sucess connect to MS SQL and exec small simpe query
+ * @property {string} instance_ip
  */
 /**s
  * @typedef connection_server_info

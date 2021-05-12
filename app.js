@@ -7,6 +7,7 @@ const shared = require('vv-mssql-shared')
 const app_connection = require('./app_connection.js')
 const app_exec = require('./app_exec.js')
 const type = require('./@type.js')
+const cmd = require('./cmd.js')
 
 class App {
     /**
@@ -14,7 +15,12 @@ class App {
      */
     constructor(options) {
         /** @private @type {type.ping_server_info} */
-        this._info = undefined
+        this._info = {
+            version: undefined,
+            timezone: undefined,
+            ping_duration_msec: undefined,
+            instance_ip: undefined
+        }
         /** @private @type {type.constructor_options} */
         this._connection_option = undefined
         /** @private @type {tds.ConnectionConfig} */
@@ -46,20 +52,51 @@ class App {
      * @param {callback_ping} [callback]
      */
     ping(callback) {
+        this._info.version = undefined
+        this._info.timezone = undefined
+        this._info.ping_duration_msec = undefined
+
         this.exec(["PRINT 'timeout'", shared.depot_server_info()], undefined, (callback_exec => {
             if (callback_exec.type === "end") {
                 if (vvs.isEmpty(callback_exec.end.error)) {
-                    this._info = {
-                        version: vvs.findPropertyValueInObject(callback_exec.end.table_list[0].row_list[0], 'version', ''),
-                        timezone: vvs.findPropertyValueInObject(callback_exec.end.table_list[0].row_list[0], 'timezone', 0),
-                        ping_duration_msec: callback_exec.end.query_list[0].duration
-                    }
+                    this._info.version = vvs.findPropertyValueInObject(callback_exec.end.table_list[0].row_list[0], 'version', '')
+                    this._info.timezone = vvs.findPropertyValueInObject(callback_exec.end.table_list[0].row_list[0], 'timezone', 0)
+                    this._info.ping_duration_msec = callback_exec.end.query_list[0].duration
                     if (vvs.isFunction(callback)) {
                         callback(undefined)
                     }
                 } else {
-                    if (vvs.isFunction(callback)) {
-                        callback(callback_exec.end.error)
+                    if (
+                        (this._connection_option.beautify_instance === 'change' || this._connection_option.beautify_instance === 'check')
+                        &&
+                        (!vvs.isEmptyString(this._connection_option_tds.server))
+                        &&
+                        (vvs.isEmptyString(vvs.toIp(this._connection_option_tds.server)))
+                        &&
+                        vvs.isEmpty(this._info.instance_ip)
+                    ) {
+                        cmd.find_ip_by_comp_name(this._connection_option_tds.server, ip => {
+                            if (vvs.isEmptyString(ip)) {
+                                this._info.instance_ip = ''
+                                if (vvs.isFunction(callback)) {
+                                    callback(callback_exec.end.error)
+                                }
+                            } else {
+                                this._info.instance_ip = ip
+                                if (this._connection_option.beautify_instance === 'change') {
+                                    this._connection_option_tds.server = ip
+                                    this.ping(callback)
+                                } else {
+                                    if (vvs.isFunction(callback)) {
+                                        callback(callback_exec.end.error)
+                                    }
+                                }
+                            }
+                        })
+                    } else {
+                        if (vvs.isFunction(callback)) {
+                            callback(callback_exec.end.error)
+                        }
                     }
                 }
             }

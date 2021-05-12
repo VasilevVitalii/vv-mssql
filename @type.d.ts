@@ -12,6 +12,10 @@ export type constructor_options = {
      */
     password?: string;
     additional?: connection_option_additional;
+    /**
+     * work in ping function if ping fail and server name in instance like comp name, find ip for this comp name and change instance. default = 'no'
+     */
+    beautify_instance?: 'no' | 'check' | 'change';
 };
 export type type_row_name_beauty = 'original' | 'first_letter_to_lower';
 export type connection_option_additional = {
@@ -57,6 +61,7 @@ export type ping_server_info = {
      * time (in millisecond) for sucess connect to MS SQL and exec small simpe query
      */
     ping_duration_msec: number;
+    instance_ip: string;
 };
 /**
  * s
