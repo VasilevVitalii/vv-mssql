@@ -22,6 +22,9 @@ exports.options_beautify = options_beautify
  * @typedef {type.exec_result_table} exec_result_table
  */
 /**
+ * @typedef {type.exec_result_column} exec_result_column
+ */
+/**
  * @typedef {type.exec_result_message} exec_result_message
  */
 /**

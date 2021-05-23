@@ -3,6 +3,7 @@ export type options = type.constructor_options;
 export type exec_result = type.exec_result;
 export type exec_result_end = type.exec_result_end;
 export type exec_result_table = type.exec_result_table;
+export type exec_result_column = type.exec_result_column;
 export type exec_result_message = type.exec_result_message;
 export type exec_lock = type.exec_lock;
 export type row_name_beauty = type.type_row_name_beauty;
@@ -20,6 +21,9 @@ export type row_name_beauty = type.type_row_name_beauty;
  */
 /**
  * @typedef {type.exec_result_table} exec_result_table
+ */
+/**
+ * @typedef {type.exec_result_column} exec_result_column
  */
 /**
  * @typedef {type.exec_result_message} exec_result_message
