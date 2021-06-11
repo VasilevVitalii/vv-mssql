@@ -104,6 +104,10 @@ export type exec_option = {
      * convert null in cell to undefined, default - false
      */
     null_to_undefined?: boolean;
+    /**
+     * read dataset result to array of tables, default - true
+     */
+    allow_tables?: boolean;
 };
 export type exec_query = {
     type: 'query' | 'get_spid' | 'database' | 'lock';

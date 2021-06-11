@@ -68,6 +68,7 @@ exports.stub = stub
  * @property {exec_lock} [lock] protect competitive exec query, based on sp_getapplock, default - undefined (off)
  * @property {boolean} [stop_on_error] for exec many queries in one batch - if in step error exists, next steps not run, default - true
  * @property {boolean} [null_to_undefined] convert null in cell to undefined, default - false
+ * @property {boolean} [allow_tables] read dataset result to array of tables, default - true
  */
 
 /**

@@ -144,88 +144,91 @@ function exec(connection, result_funded, exec_option, last_table_chunk_index, ca
         })
     })
 
-    query.on('columnMetadata', function(columns) {
-        if (!vvs.isEmpty(error_in_event)) return
-        try {
-            row_index_in_table = 0
-            row_index_in_table_chunk = 0
+    if (exec_option.allow_tables === true || current_query.type === 'get_spid') {
+        query.on('columnMetadata', function(columns) {
+            if (!vvs.isEmpty(error_in_event)) return
+            try {
+                row_index_in_table = 0
+                row_index_in_table_chunk = 0
 
-            if (current_query.type !== 'query') return
-            let perf_columnMetadata_start = performance.now()
+                if (current_query.type !== 'query') return
+                let perf_columnMetadata_start = performance.now()
 
-            if (
-                !vvs.isEmptyString(exec_option.chunk.type) &&
-                connection.current_state.table_index >= 0 &&
-                (result_funded.table_list[connection.current_state.table_index].row_list.length > 0)
-                ) {
-                let chunk = exec_move_to_chunk(result_funded, connection.current_state.table_index, last_table_chunk_index)
-                callback({
-                    type: 'chunk',
-                    chunk: chunk
-                })
-            }
-
-            connection.current_state.table_index++
-
-            let column_list_beauty = column_list_beautify(columns, exec_option.null_to_undefined)
-
-            // @ts-ignore
-            row_beautify_function = column_list_beauty.row_beautify_function
-            result_funded.table_list.push({
-                query_index: connection.current_state.query_index,
-                table_index: connection.current_state.table_index,
-                column_list: column_list_beauty.column_list,
-                row_list: [],
-            })
-
-            perf_columnMetadata = (performance.now() - perf_columnMetadata_start) + perf_columnMetadata
-        } catch (error) {
-            error_in_event = error
-        }
-    })
-
-    query.on('row', function(row) {
-        if (!vvs.isEmpty(error_in_event)) return
-        try {
-            row_index_in_table++
-            row_index_in_table_chunk++
-
-            let need_perf = (connection.current_state.table_index >= 0 && (row_index_in_table <= 100 || (row_index_in_table >= 1000 && row_index_in_table <= 1100)))
-            if (need_perf === true) perf_on_row_event_start = performance.now()
-
-            if (current_query.type === 'query') {
-                result_funded.table_list[connection.current_state.table_index].row_list.push(row_beautify_function(row))
-
-                let need_send_chunk = false
-                if (exec_option.chunk.type === 'row' && row_index_in_table_chunk >= exec_option.chunk.chunk) {
-                    need_send_chunk = true
-                } else if (exec_option.chunk.type === 'msec' && row_index_in_table_chunk >= 100) {
-                    let perf_chunk_now = performance.now()
-                    if (perf_chunk_now - perf_chunk > exec_option.chunk.chunk) {
-                        need_send_chunk = true
-                        perf_chunk = perf_chunk_now
-                    }
-                }
-                if (need_send_chunk === true) {
+                if (
+                    !vvs.isEmptyString(exec_option.chunk.type) &&
+                    connection.current_state.table_index >= 0 &&
+                    (result_funded.table_list[connection.current_state.table_index].row_list.length > 0)
+                    ) {
                     let chunk = exec_move_to_chunk(result_funded, connection.current_state.table_index, last_table_chunk_index)
-                    row_index_in_table_chunk = 0
-                    last_table_chunk_index = connection.current_state.table_index
                     callback({
                         type: 'chunk',
                         chunk: chunk
                     })
                 }
 
-            } else {
-                row_raw = row
+                connection.current_state.table_index++
+
+                let column_list_beauty = column_list_beautify(columns, exec_option.null_to_undefined)
+
+                // @ts-ignore
+                row_beautify_function = column_list_beauty.row_beautify_function
+                result_funded.table_list.push({
+                    query_index: connection.current_state.query_index,
+                    table_index: connection.current_state.table_index,
+                    column_list: column_list_beauty.column_list,
+                    row_list: [],
+                })
+
+                perf_columnMetadata = (performance.now() - perf_columnMetadata_start) + perf_columnMetadata
+            } catch (error) {
+                error_in_event = error
             }
+        })
+    }
 
-            if (need_perf === true) perf_on_row_event_durations.push({table_index: connection.current_state.table_index, duration: performance.now() - perf_on_row_event_start})
-        } catch (error) {
-            error_in_event = error
-        }
-    })
+    if (exec_option.allow_tables === true || current_query.type === 'get_spid') {
+        query.on('row', function(row) {
+            if (!vvs.isEmpty(error_in_event)) return
+            try {
+                row_index_in_table++
+                row_index_in_table_chunk++
 
+                let need_perf = (connection.current_state.table_index >= 0 && (row_index_in_table <= 100 || (row_index_in_table >= 1000 && row_index_in_table <= 1100)))
+                if (need_perf === true) perf_on_row_event_start = performance.now()
+
+                if (current_query.type === 'query') {
+                    result_funded.table_list[connection.current_state.table_index].row_list.push(row_beautify_function(row))
+
+                    let need_send_chunk = false
+                    if (exec_option.chunk.type === 'row' && row_index_in_table_chunk >= exec_option.chunk.chunk) {
+                        need_send_chunk = true
+                    } else if (exec_option.chunk.type === 'msec' && row_index_in_table_chunk >= 100) {
+                        let perf_chunk_now = performance.now()
+                        if (perf_chunk_now - perf_chunk > exec_option.chunk.chunk) {
+                            need_send_chunk = true
+                            perf_chunk = perf_chunk_now
+                        }
+                    }
+                    if (need_send_chunk === true) {
+                        let chunk = exec_move_to_chunk(result_funded, connection.current_state.table_index, last_table_chunk_index)
+                        row_index_in_table_chunk = 0
+                        last_table_chunk_index = connection.current_state.table_index
+                        callback({
+                            type: 'chunk',
+                            chunk: chunk
+                        })
+                    }
+
+                } else {
+                    row_raw = row
+                }
+
+                if (need_perf === true) perf_on_row_event_durations.push({table_index: connection.current_state.table_index, duration: performance.now() - perf_on_row_event_start})
+            } catch (error) {
+                error_in_event = error
+            }
+        })
+    }
     let perf_start = performance.now()
     let perf_chunk = perf_start
     connection.tds_connection.execSqlBatch(query)
@@ -266,7 +269,8 @@ function exec_option_beautify(exec_option) {
             },
             lock: undefined,
             stop_on_error: true,
-            null_to_undefined: false
+            null_to_undefined: false,
+            allow_tables: true
         }
     }
 
@@ -303,7 +307,8 @@ function exec_option_beautify(exec_option) {
         chunk: chunk,
         lock: lock,
         stop_on_error: vvs.toBool(exec_option.stop_on_error, true),
-        null_to_undefined: vvs.toBool(exec_option.null_to_undefined, true),
+        null_to_undefined: vvs.toBool(exec_option.null_to_undefined, false),
+        allow_tables: vvs.toBool(exec_option.allow_tables, true),
     }
 }
 
